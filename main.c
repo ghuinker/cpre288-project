@@ -45,11 +45,18 @@ void print_screen(oi_t  *sensor_data, bool backup_warning, int *ping_distances)
 
     uart_sendStr("Key: wasd-Move, f-Quick Scan, F - Full Scan");
     int i=0;
-    for(i=0; i < 18; i++){
-        sprintf(temp, "Ping Dist: %d", ping_distances[i]);
-        uart_sendStr(temp);
+    for(i=0; i < 80; i++){
+        uart_sendChar((ping_distances[i] / 33) + 48);
     }
 
+    uart_sendStr("");
+    for(i = 0; i< 80; i++){
+        if(i == 40)
+            uart_sendChar('U');
+        else
+            uart_sendChar(' ');
+    }
+    uart_sendStr("");
 
     // Sensors
     uart_sendStr("Sensors:");
@@ -63,13 +70,13 @@ void print_screen(oi_t  *sensor_data, bool backup_warning, int *ping_distances)
     if(sensor_data->wheelDropRight)
         uart_sendStr("Wheel Drop Right");
 
-    if(sensor_data->cliffFrontLeft)
+    if(sensor_data->cliffFrontLeftSignal != 1000)
         uart_sendStr("Cliff Front Left");
-    if(sensor_data->cliffFrontRight)
+    if(sensor_data->cliffFrontRightSignal != 1000)
         uart_sendStr("Cliff Front Right");
-    if(sensor_data->cliffRight)
+    if(sensor_data->cliffRightSignal != 1000)
         uart_sendStr("Cliff Right");
-    if(sensor_data->cliffLeft)
+    if(sensor_data->cliffLeftSignal != 1000)
         uart_sendStr("Cliff Left");
     if(sensor_data->wallSensor)
         uart_sendStr("Wall");
@@ -93,13 +100,13 @@ bool needs_to_backup(oi_t *sensor_data)
         return true;
     if(sensor_data->wheelDropRight)
         return true;
-    if(sensor_data->cliffFrontLeft)
+    if(sensor_data->cliffFrontLeftSignal != 1000)
         return true;
-    if(sensor_data->cliffFrontRight)
+    if(sensor_data->cliffFrontRightSignal != 1000)
         return true;
-    if(sensor_data->cliffRight)
+    if(sensor_data->cliffRightSignal != 1000)
         return true;
-    if(sensor_data->cliffLeft)
+    if(sensor_data->cliffLeftSignal != 1000)
         return true;
     if(sensor_data->wallSensor)
         return true;
@@ -133,7 +140,7 @@ int main(void)
     int ping_dist = -1;
     int i =0;
 
-    int ping_distances[18];
+    int ping_distances[80];
 
 
     servo_move(90);
@@ -162,9 +169,8 @@ int main(void)
         }
 
         else if(c == 'f'){
-            for(i=0; i< 18; i++){
-                servo_move(0 + (i * 10));
-                timer_waitMillis(10);
+            for(i=0; i< 80; i++){
+                servo_move(0 + (i * 2));
                 ping_distances[i] = ping_getDistance();
             }
         }
