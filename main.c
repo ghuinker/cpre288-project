@@ -5,6 +5,12 @@
 #include "uart.h"
 #include "movement.h"
 #include "open_interface.h"
+#include "servo.h"
+#include "ping.h"
+#include "adc.h"
+#include "cyBot_FindObjects.h"
+#include "resetSimulation.h"
+#include <inc/tm4c123gh6pm.h>
 
 // Window: 80x25
 
@@ -29,12 +35,21 @@ int MOVEMENT_DIST = 50;
     uint32_t wallSensor : 1;
     uint32_t virtualWall : 1;*/
 
-void print_screen(oi_t  *sensor_data, bool backup_warning)
+void print_screen(oi_t  *sensor_data, bool backup_warning, int *ping_distances)
 {
     // Clear the screen
+    char temp[26];
+    temp[25] = '\0';
+
     uart_sendStr("\e[1;1H\e[2J");
 
-    uart_sendStr("Key: Something SOmething Something");
+    uart_sendStr("Key: wasd-Move, f-Quick Scan, F - Full Scan");
+    int i=0;
+    for(i=0; i < 18; i++){
+        sprintf(temp, "Ping Dist: %d", ping_distances[i]);
+        uart_sendStr(temp);
+    }
+
 
     // Sensors
     uart_sendStr("Sensors:");
@@ -68,11 +83,6 @@ void print_screen(oi_t  *sensor_data, bool backup_warning)
     // Print Field
 }
 
-int dist_to_ping()
-{
-
-}
-
 bool needs_to_backup(oi_t *sensor_data)
 {
     if(sensor_data->bumpLeft)
@@ -100,21 +110,40 @@ bool needs_to_backup(oi_t *sensor_data)
 
 int main(void)
 {
-    button_init();
+
+    uart_init();
+    servo_init();
+
+    ping_init();
+    adc_init();
+
+    //button_init();
     timer_init(); // Must be called before lcd_init(), which uses timer functions
     lcd_init();
 
-    uart_init();
+
     oi_t *sensor_data = oi_alloc();
 
     oi_init(sensor_data);
+
+
     int frames = 0;
     bool backup_warning = false;
+    bool has_moved = false;
+    int ping_dist = -1;
+    int i =0;
+
+    int ping_distances[18];
+
+
+    servo_move(90);
+
+
+
     while (1)
     {
         char c = 0;
         c = uart_receive();
-        dist_to_ping();
         if(c == 's'){
             move_backward(sensor_data, MOVEMENT_DIST);
             backup_warning = false;
@@ -131,10 +160,18 @@ int main(void)
         else if (c == 'd'){
             turn_right(sensor_data, 25);
         }
+
+        else if(c == 'f'){
+            for(i=0; i< 18; i++){
+                servo_move(0 + (i * 10));
+                timer_waitMillis(10);
+                ping_distances[i] = ping_getDistance();
+            }
+        }
         // Redraw Putty
         if (frames % 100000 == 0)
         {
-            print_screen(sensor_data, backup_warning);
+            print_screen(sensor_data, backup_warning, ping_distances);
             uart_sendStr("Current Key: \n\r");
             uart_sendChar(c);
         } else {

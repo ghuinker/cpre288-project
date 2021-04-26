@@ -1,8 +1,10 @@
-/**
- * Driver for ping sensor
- * @file ping.c
- * @author
+/*
+ * ping.h
+ *
+ *  Created on: Apr 22, 2021
+ *      Author: brnorman
  */
+
 #ifndef PING_H_
 #define PING_H_
 

@@ -1,10 +1,11 @@
-/**
- * Driver for ping sensor
- * @file ping.c
- * @author
+/*
+ * ping.c
+ *
+ *  Created on: Apr 22, 2021
+ *      Author: brnorman
  */
 
-#include "ping_template.h"
+#include "ping.h"
 #include "Timer.h"
 #include "driverlib/interrupt.h"
 #include "lcd.h"
@@ -106,7 +107,7 @@ void TIMER3B_Handler(void){
 float ping_getDistance (void){
 
     // YOUR CODE HERE
-    unsigned long tempS, tempE;
+    unsigned long tempE, tempS;
 
 
     unsigned long time_dif = 0;
