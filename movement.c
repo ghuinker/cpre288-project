@@ -15,6 +15,7 @@ double  move_forward (oi_t  *sensor_data,   double distance_mm)
         oi_update(sensor_data);
         sum += sensor_data -> distance; // use -> notation since pointer
         if(sensor_data->bumpLeft || sensor_data->bumpRight){
+            oi_setWheels(0,0);
             return sum;
         }
     }
