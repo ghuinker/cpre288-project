@@ -35,7 +35,7 @@ int cyBot_FindObjects(cyBot_Object_t getObjects[], int size_of_input){
 
 
     servo_move(0);
-    for (i=0;i<181;i++){
+    for (i=0;i<180;i++){
         temp = IR_Distance();
         if ((temp > 10) && (temp < 80)){
             angle1=i;
@@ -59,7 +59,7 @@ int cyBot_FindObjects(cyBot_Object_t getObjects[], int size_of_input){
     }
 
 
-    for (z=0;z<size_of_input;z++){
+    for (z=0;z<object_number;z++){
           servo_move(getObjects[z].angle);
           timer_waitMillis(1000);
           getObjects[z].distance = ping_getDistance();
@@ -71,29 +71,6 @@ int cyBot_FindObjects(cyBot_Object_t getObjects[], int size_of_input){
       }
 
 
-
-    /*char header[]="Object# Angle Distance Width\n";
-    for (i=0; i<strlen(header); i++){
-       cyBot_sendByte(header[i]);
-   }*/
-
-    printf("%d ", getObjects[0].angle);
-    printf("%d ", getObjects[1].angle);
-    printf("%d ", getObjects[2].angle);
-
-    printf("%lf ", getObjects[0].distance);
-    printf("%lf ", getObjects[1].distance);
-    printf("%lf ", getObjects[2].distance);
-
-    printf("%lf ", getObjects[0].width);
-    printf("%lf ", getObjects[1].width);
-    printf("%lf ", getObjects[2].width);
-
-
-
-
-
-
-return 0;
+return object_number;
 
 }
