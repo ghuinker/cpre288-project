@@ -35,7 +35,7 @@ int MOVEMENT_DIST = 50;
     uint32_t wallSensor : 1;
     uint32_t virtualWall : 1;*/
 
-void print_screen(oi_t  *sensor_data, bool backup_warning, cyBot_Object_t objects[], int objects_found)
+void print_screen(oi_t  *sensor_data, bool backup_warning, cyBot_Object_t objects[], int objects_found, int ping_distances[])
 {
     // Clear the screen
     char temp[80];
@@ -51,6 +51,12 @@ void print_screen(oi_t  *sensor_data, bool backup_warning, cyBot_Object_t object
     }
     sprintf(temp, "%d", objects_found);
     uart_sendStr(temp);
+
+    uart_sendStr("PING");
+    for(i = 0; i< 10; i++){
+        sprintf(temp, "%d", ping_distances[i]);
+        uart_sendStr(temp);
+    }
 
     uart_sendStr("");
     for(i = 0; i< 80; i++){
@@ -144,13 +150,14 @@ int main(void)
     int i =0;
     int objects_found = 0;
 
-    int ping_distances[80];
 
 
     servo_move(90);
 
     int num_objects = 10;
     cyBot_Object_t objects[num_objects];
+
+    int ping_distances[10];
 
 
 
@@ -176,15 +183,23 @@ int main(void)
         else if (c == 'd'){
             turn_right(sensor_data, 25);
         }
-
         else if(c == 'f'){
+            objects_found = 0;
+
+            for(i=0; i<10; i++){
+                servo_move(40 + (i*10));
+                timer_waitMillis(100);
+                ping_distances[i] = ping_getDistance();
+            }
+        }
+        else if(c == 'F'){
             objects_found = cyBot_FindObjects(objects, num_objects);
             servo_move(90);
         }
         // Redraw Putty
         if (frames % 100000 == 0)
         {
-            print_screen(sensor_data, backup_warning, objects, objects_found);
+            print_screen(sensor_data, backup_warning, objects, objects_found, ping_distances);
             uart_sendStr("Current Key: \n\r");
             uart_sendChar(c);
         } else {
